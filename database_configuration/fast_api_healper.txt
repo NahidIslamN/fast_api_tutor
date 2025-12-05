@@ -1,0 +1,163 @@
+fast api postgrase  database setup
+
+
+
+step 1 install postgrase into your local machines :
+
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+
+
+### check postgrase worke or not
+
+sudo systemctl status postgresql
+
+
+
+
+setp 2 postgrase shell and create database: must rembeer the database password when create the database:
+
+sudo -i -u postgres
+
+psql
+
+
+
+#########################data base create ing commands###################
+
+Create a database user:
+
+CREATE USER fastapi_user WITH PASSWORD 'your_password';
+
+Create a database:
+
+CREATE DATABASE fastapi_db OWNER fastapi_user;
+
+Give privileges:
+GRANT ALL PRIVILEGES ON DATABASE fastapi_db TO fastapi_user;
+
+
+Exit PostgreSQL:
+
+\q
+
+
+Exit postgres user:
+
+exit
+
+
+
+
+# step3 design & create table into database
+pip install fastapi uvicorn sqlalchemy asyncpg
+
+install database async package in venv
+
+
+
+##### database.py
+
+
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker, declarative_base
+
+DATABASE_URL = "postgresql+asyncpg://lazy_alien:141563@localhost:5432/main_db"
+
+# Async engine
+engine = create_async_engine(DATABASE_URL, echo=True)
+
+# Async session
+AsyncSessionLocal = sessionmaker(
+    bind=engine,
+    class_=AsyncSession,
+    expire_on_commit=False
+)
+
+# Base class for models
+Base = declarative_base()
+
+# Dependency for FastAPI
+async def get_db():
+    async with AsyncSessionLocal() as session:
+        yield session
+
+
+
+
+
+
+####### create_tables.py
+
+
+import asyncio
+from database import engine, Base
+import models  # make sure this imports your User model
+
+async def init_models():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+asyncio.run(init_models())
+print("Tables created successfully!")
+
+
+### in models.py
+
+
+
+from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey
+from sqlalchemy.orm import relationship
+from database import Base
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100))
+
+    # optional: to get posts from user
+    posts = relationship("UserPosts", back_populates="user")
+
+
+class UserPosts(Base):
+    __tablename__ = "posts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))  # relation to User
+    name = Column(String(100))
+    description = Column(String(500))
+    price = Column(Float, default=0.0)
+    is_stock = Column(Boolean, default=True)
+
+    # optional: to get user from post
+    user = relationship("User", back_populates="posts")
+
+after desing your models
+
+python create_tables.py || when created your table successfully you will be active to use database...
+
+
+
+in main.py
+
+from fastapi import FastAPI, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+
+from database import get_db  # must exist in database.py
+from models import User
+
+app = FastAPI()
+
+@app.get("/users")
+async def get_users(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(User))
+    users = result.scalars().all()
+    return users
+
+
+
+
+
+
