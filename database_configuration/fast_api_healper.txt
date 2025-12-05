@@ -23,26 +23,18 @@ psql
 
 
 
-#########################data base create ing commands###################
+###########################################data base create ing commands###################
 
-Create a database user:
 
 CREATE USER fastapi_user WITH PASSWORD 'your_password';
 
-Create a database:
-
 CREATE DATABASE fastapi_db OWNER fastapi_user;
 
-Give privileges:
 GRANT ALL PRIVILEGES ON DATABASE fastapi_db TO fastapi_user;
 
 
-Exit PostgreSQL:
-
 \q
 
-
-Exit postgres user:
 
 exit
 
@@ -50,13 +42,17 @@ exit
 
 
 # step3 design & create table into database
+
 pip install fastapi uvicorn sqlalchemy asyncpg
 
 install database async package in venv
 
 
 
-##### database.py
+
+
+
+########################################################## database.py #####################################
 
 
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
@@ -86,7 +82,7 @@ async def get_db():
 
 
 
-######### if use sql lite3
+############################################################### if use sql lite3 ##################################
 pip install aiosqlite
 
 
@@ -123,28 +119,7 @@ async def get_db():
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-####### create_tables.py
+################################################################ create_tables.py ###########################
 
 
 import asyncio
@@ -159,7 +134,13 @@ asyncio.run(init_models())
 print("Tables created successfully!")
 
 
-### in models.py
+
+
+
+
+
+
+####################################################################### in models.py ##################################
 
 
 
