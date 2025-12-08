@@ -4,21 +4,17 @@ fast api postgrase  database setup
 
 step 1 install postgrase into your local machines :
 
+
 sudo apt update
 sudo apt install postgresql postgresql-contrib
-
-
-### check postgrase worke or not
-
 sudo systemctl status postgresql
 
 
 
 
-setp 2 postgrase shell and create database: must rembeer the database password when create the database:
+setp 2 :
 
 sudo -i -u postgres
-
 psql
 
 
